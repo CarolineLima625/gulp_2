@@ -126,7 +126,7 @@ a {
 /* Banner Style */
 .banner {
 	margin-top: 80px;
-	background-image: url(../assets/images/comp.jpg);
+	background-image: url(../images/comp.jpg);
 	background-size: cover;
 	background-repeat: no-repeat;
 	padding: 150px 0px;
