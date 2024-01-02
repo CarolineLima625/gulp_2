@@ -4,34 +4,55 @@ const cssmin = require('gulp-cssmin')
 const rename = require('gulp-rename')
 const uglify = require ('gulp-uglify')
 const image = require('gulp-image')
+const stripJs = require('gulp-strip-comments')
+const stripCss = require('gulp-strip-css-comments')
+const htmlmin = require('gulp-htmlmin')
+const babel = require('gulp-babel')
+const browserSync = require('browser-sync').create()
+const sass = require("gulp-sass")(require("node-sass"))
+const reload = browserSync.reload
 
 function tarefasCSS(cb){ 
     return gulp.src(['./node_modules/bootstrap/dist/css/bootstrap.css', 
     './vendor/owl/css/owl.css',
     "./node_modules/@fortawesome/fontawesome-free/css/fontawesome.css",
-    "./vendor/jquery-ui.custom/jquery-ui.css",
-    "./src/css/style.css"
+    "./vendor/jquery-ui.custom/jquery-ui.css"
     ])
-        .pipe(concat('styles.css'))
+        .pipe(concat('libs.css'))
         .pipe(cssmin())
         .pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest('./dist/css'))
 }
 
-function tarefasJS(cb){
-    return gulp.src([
-        "./node_modules/jquery/dist/jquery.js",
-        "./node_modules/bootstrap/dist/js/bootstrap.js",
-        "./vendor/owl/js/owl.js",
-        "./vendor/jquery-mask/jquery.mask.js",
-        "./vendor/jquery-ui.custom/jquery-ui.js",
-        "./src/js/custom.js"
-        
+function tarefaSASS (cb){
+    gulp.src('./src/scss/**/*.scss')
+    .pipe(sass())
+    .pipe(gulp.dest("/dist/css"))
+
+    cb()
+    }
+
+
+function tarefasJS(callback){
+
+    gulp.src([
+            './node_modules/jquery/dist/jquery.js',
+            './node_modules/bootstrap/dist/js/bootstrap.js',
+            './vendor/owl/js/owl.js',
+            './vendor/jquery-mask/jquery.mask.js',
+            // './vendor/jquery-ui/jquery-ui.js',
+            './src/js/custom.js'
         ])
-        .pipe(concat("scripts.js"))
-        .pipe(uglify())
-        .pipe(rename({suffix: ".min"}))
-        .pipe(gulp.dest("./dist/js"))
+        .pipe(babel({
+            comments: false,
+            presets: ['@babel/env']
+        }))
+        .pipe(concat('scripts.js'))         // mescla arquivos
+        .pipe(uglify())                     // minifica js
+        .pipe(rename({ suffix: '.min'}))    // scripts.min.js
+        .pipe(gulp.dest('./dist/js'))       // cria arquivo em novo diretório
+
+    return callback()
 }
 
 function tarefasImagem(){
@@ -49,7 +70,11 @@ function tarefasImagem(){
         }))
 .       pipe(gulp.dest('./dist/images'))
 }
+const process = parallel( tarefasHTML, tarefasJS, tarefasCSS, tarefaSASS, end)
 
 exports.styles = tarefasCSS
 exports.scripts = tarefasJS
 exports.images = tarefasImagem
+exports.sass = tarefaSASS
+
+exports.default = process
